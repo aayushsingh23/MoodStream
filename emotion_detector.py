@@ -14,12 +14,16 @@ emotion_model.load_weights('./emotion_model.weights.h5')
 print("Emotion model loaded successfully!")
 def detect_emotion():
     cap = cv2.VideoCapture(0)
-    while True:
-        # Find haar cascade to draw bounding box around face
+    maxindex = 3  # Default to "Happy" if no face detected
+    face_detected = False
+    
+    # Try to capture and analyze a few frames
+    for attempt in range(30):  # Try for ~1 second at 30fps
         ret, frame = cap.read()
-        frame = cv2.resize(frame, (1280, 720))
         if not ret:
-            break
+            continue
+            
+        frame = cv2.resize(frame, (1280, 720))
         face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -33,16 +37,17 @@ def detect_emotion():
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray_frame, (48, 48)), -1), 0)
 
             # predict the emotions
-            emotion_prediction = emotion_model.predict(cropped_img)
+            emotion_prediction = emotion_model.predict(cropped_img, verbose=0)
             maxindex = int(np.argmax(emotion_prediction))
             cv2.putText(frame, emotion_dict[maxindex], (x+5, y-20), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+            face_detected = True
+            break  # Use first detected face
 
         cv2.imshow('Emotion Detection', frame)
-        if cv2.waitKey(1) & 0xFF == ord('s'):
-            break
-
-        print("Press S to show song list")
+        cv2.waitKey(1)  # Non-blocking wait
         
+        if face_detected:
+            break
 
     cap.release()
     cv2.destroyAllWindows()
