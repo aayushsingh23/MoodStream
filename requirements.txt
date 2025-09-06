@@ -6,3 +6,4 @@ tensorflow
 flask
 PyExecJS
 python_dotenv
+gunicorn

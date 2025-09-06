@@ -11,15 +11,37 @@ from datetime import datetime
 
 load_dotenv()
 app = Flask(__name__)
-    
+
+# Security headers for production
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
+# Environment variables with error handling
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
-sp = spotipy.Spotify(auth_manager=auth_manager)
 
-# Email configuration
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")  # Your MoodStream email
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  # Your email app password
+if not CLIENT_ID or not CLIENT_SECRET:
+    print("ERROR: Spotify credentials not found. Please set CLIENT_ID and CLIENT_SECRET environment variables.")
+    # Don't exit in production, just log the error
+    
+try:
+    auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+except Exception as e:
+    print(f"ERROR: Failed to initialize Spotify client: {e}")
+    sp = None
+
+# Email configuration with error handling
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+    print("WARNING: Email credentials not found. Email functionality will be disabled.")
 
 emotion_dict = {0: "Angry", 1: "Disgust", 2: "Anxious", 3: "Happy", 4: "Sad", 5: "Surprise", 6: "Relaxed"}
 
@@ -553,7 +575,12 @@ if __name__ == '__main__':
     # Get port from environment variable (Render assigns this dynamically)
     port = int(os.environ.get('PORT', 5000))
     
-    # Disable debug mode in production
-    debug_mode = os.environ.get('FLASK_ENV') != 'production'
+    # Force production mode for deployment
+    debug_mode = False  # Always False for production deployment
     
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    # Run the app
+    print(f"Starting MoodStream app on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=debug_mode, use_reloader=False)
+
+# For WSGI servers like Gunicorn
+application = app
