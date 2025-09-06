@@ -216,7 +216,7 @@
                 align-items: center;
                 z-index: 1000;
             `;
-            
+
             modal.innerHTML = `
                 <div style="
                     background: #121212;
@@ -279,7 +279,7 @@
                     <div id="emailStatus" style="margin-top: 15px;"></div>
                 </div>
             `;
-            
+
             document.body.appendChild(modal);
             document.getElementById('userEmail').focus();
         }
@@ -294,19 +294,19 @@
         function sendEmailPlaylist(emotion) {
             const email = document.getElementById('userEmail').value.trim();
             const statusDiv = document.getElementById('emailStatus');
-            
+
             if (!email) {
                 statusDiv.innerHTML = '<p style="color: #FF6B6B;">Please enter your email address</p>';
                 return;
             }
-            
+
             if (!email.includes('@') || !email.includes('.')) {
                 statusDiv.innerHTML = '<p style="color: #FF6B6B;">Please enter a valid email address</p>';
                 return;
             }
-            
+
             statusDiv.innerHTML = '<p style="color: #1DB954;">📤 Sending your playlist...</p>';
-            
+
             $.ajax({
                 url: '/send-email-playlist',
                 type: 'POST',
@@ -315,13 +315,13 @@
                     email: email,
                     emotion: emotion
                 }),
-                success: function(response) {
+                success: function (response) {
                     statusDiv.innerHTML = `<p style="color: #1DB954;">✅ ${response.message}</p>`;
                     setTimeout(() => {
                         closeEmailModal();
                     }, 2000);
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     let errorMsg = 'Failed to send email. Please try again.';
                     if (xhr.responseJSON && xhr.responseJSON.error) {
                         errorMsg = xhr.responseJSON.error;
@@ -332,14 +332,14 @@
         }
 
         // Close modal when clicking outside
-        $(document).on('click', '#emailModal', function(e) {
+        $(document).on('click', '#emailModal', function (e) {
             if (e.target.id === 'emailModal') {
                 closeEmailModal();
             }
         });
 
         // Handle Enter key in email input
-        $(document).on('keypress', '#userEmail', function(e) {
+        $(document).on('keypress', '#userEmail', function (e) {
             if (e.which === 13) {
                 const emotion = document.querySelector('#emailModal button[onclick*="sendEmailPlaylist"]')
                     .getAttribute('onclick').match(/'([^']+)'/)[1];
