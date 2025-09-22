@@ -410,9 +410,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by [Aayush Singh](https://github.com/aayushsingh23)**
+**Made with ❤️ by [Aayush Singh](https://github.com/aayushsingh23) and [Yuvika Sardana](https://github.com/yuvikasardana)**
 
 ⭐ **Star this repo if you found it helpful!** ⭐
 
-</div>oodStream
+</div>MoodStream
 It’s a platform that recommends a playlist of 10 songs tailored to your current emotion. It identifies whether you’re feeling sad, angry, anxious, surprised, worried, or happy, and curates a selection of songs to match your mood.
