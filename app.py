@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-from emotion_detector import detect_emotion
+from emotion_detector import predict_emotion_from_base64
 from dotenv import load_dotenv
 import os
 import smtplib
@@ -485,25 +485,23 @@ def send_email_playlist(user_email, emotion, songs_list):
 @app.route('/', methods=['GET'])
 @app.route('/detect-emotion-and-recommend', methods=['GET','POST'])
 def detect_and_recommend():
-    """
-    Auto-detect emotion using camera and recommend songs.
-    """
     if request.method == 'POST':
         try:
-            detected_emotion_index = detect_emotion()
-            emotion = emotion_dict[detected_emotion_index]
-            
-            if not emotion:
+            data = request.json
+            img_base64 = data.get('image')
+            detected_emotion_index = predict_emotion_from_base64(img_base64)
+
+            if detected_emotion_index is None:
                 return jsonify({"error": "No face detected. Please try again."}), 400
 
+            emotion = emotion_dict[detected_emotion_index]
             songs = get_songs_for_emotion(emotion)
-            print(f"Auto-detected emotion: {emotion}, found {len(songs)} songs")
             return jsonify({"emotion": emotion, "songs": songs})
-            
+
         except Exception as e:
             print(f"Error in emotion detection: {e}")
             return jsonify({"error": "Failed to detect emotion. Please try again."}), 500
-            
+
     return render_template('index.html')
 
 @app.route('/select-emotion-and-recommend', methods=['POST'])
